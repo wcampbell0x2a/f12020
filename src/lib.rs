@@ -191,13 +191,13 @@ pub enum PacketEvent {
 #[derive(Debug, DekuRead)]
 pub struct ParticipantData {
     ai_controlled: u8, // TODO bool
-    driver_id: u8, // TODO enum?
-    time_id: u8, // TODO enum?
+    driver_id: u8,     // TODO enum?
+    time_id: u8,       // TODO enum?
     race_number: u8,
     nationality: u8,
     #[deku(count = "48")]
     name: Vec<u8>,
-    your_telemetry: u8 // TODO enum
+    your_telemetry: u8, // TODO enum
 }
 
 #[derive(Debug, DekuRead)]
@@ -236,7 +236,7 @@ pub struct CarSetupData {
 #[derive(Debug, DekuRead)]
 pub struct PacketCarSetupData {
     #[deku(count = "22")]
-    car_setups: Vec<CarSetupData>
+    car_setups: Vec<CarSetupData>,
 }
 
 #[derive(Debug, DekuRead)]
@@ -305,7 +305,7 @@ pub struct CarStatusData {
 #[derive(Debug, DekuRead)]
 pub struct PacketCarStatusData {
     #[deku(count = "22")]
-    car_status_data: Vec<CarStatusData>
+    car_status_data: Vec<CarStatusData>,
 }
 
 #[derive(Debug, DekuRead)]
