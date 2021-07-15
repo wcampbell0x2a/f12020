@@ -7,3 +7,8 @@ edition = "2018"
 
 [dependencies]
 deku = "0.12.0"
+
+[dev-dependencies]
+tui = {version = "0.15", default-features = false, features = ["crossterm"]}
+crossterm = "0.20"
+chrono = "0.4"

@@ -2,18 +2,18 @@ use deku::prelude::*;
 
 #[derive(Debug, DekuRead)]
 pub struct Packet {
-    packet_format: u16,
-    game_major_version: u8,
-    game_minor_version: u8,
-    packet_version: u8,
-    packet_id: u8,
-    session_uid: u64,
-    session_time: f32,
-    frame_ident: u32,
-    player_car_index: u8,
-    secondary_player_car_index: u8,
+    pub packet_format: u16,
+    pub game_major_version: u8,
+    pub game_minor_version: u8,
+    pub packet_version: u8,
+    pub packet_id: u8,
+    pub session_uid: u64,
+    pub session_time: f32,
+    pub frame_ident: u32,
+    pub player_car_index: u8,
+    pub secondary_player_car_index: u8,
     #[deku(ctx = "*packet_id")]
-    packet_type: PacketType,
+    pub packet_type: PacketType,
 }
 
 #[derive(Debug, DekuRead)]
@@ -37,7 +37,8 @@ pub enum PacketType {
     CarStatus(PacketCarStatusData),
     #[deku(id = "8")]
     FinalClassification(PacketFinalClassificationData),
-    //LobbyInfo    = 9,
+    #[deku(id = "9")]
+    LobbyInfo,
 }
 
 #[derive(Debug, DekuRead)]
@@ -126,39 +127,39 @@ pub struct PacketSessionData {
 
 #[derive(Debug, DekuRead)]
 pub struct LapData {
-    last_lap_time: f32,
-    current_lap_time: f32,
-    sector1_time_inms: u16,
-    sector2_time_inms: u16,
-    best_lap_time: f32,
-    best_lap_num: u8,
-    best_lap_sector1_time_in_ms: u16,
-    best_lap_sector2_time_in_ms: u16,
-    best_lap_sector3_time_in_ms: u16,
-    best_overall_sector1_time_in_ms: u16,
-    best_overall_sector1_lap_num: u8,
-    best_overall_sector2_time_in_ms: u16,
-    best_overall_sector2_lap_num: u8,
-    best_overall_sector3_time_in_ms: u16,
-    best_overall_sector3_lap_num: u8,
-    lap_distance: f32,
-    total_distance: f32,
-    safety_car_delta: f32,
-    car_position: u8,
-    current_lap_num: u8,
-    pit_status: u8,          // TODO enum
-    sector: u8,              // TODO enum
-    current_lap_invalid: u8, // TODO enum
-    penalties: u8,
-    grid_position: u8,
-    driver_status: u8, // TODO enum
-    result_status: u8, // TODO enum
+    pub last_lap_time: f32,
+    pub current_lap_time: f32,
+    pub sector1_time_inms: u16,
+    pub sector2_time_inms: u16,
+    pub best_lap_time: f32,
+    pub best_lap_num: u8,
+    pub best_lap_sector1_time_in_ms: u16,
+    pub best_lap_sector2_time_in_ms: u16,
+    pub best_lap_sector3_time_in_ms: u16,
+    pub best_overall_sector1_time_in_ms: u16,
+    pub best_overall_sector1_lap_num: u8,
+    pub best_overall_sector2_time_in_ms: u16,
+    pub best_overall_sector2_lap_num: u8,
+    pub best_overall_sector3_time_in_ms: u16,
+    pub best_overall_sector3_lap_num: u8,
+    pub lap_distance: f32,
+    pub total_distance: f32,
+    pub safety_car_delta: f32,
+    pub car_position: u8,
+    pub current_lap_num: u8,
+    pub pit_status: u8,          // TODO enum
+    pub sector: u8,              // TODO enum
+    pub current_lap_invalid: u8, // TODO enum
+    pub penalties: u8,
+    pub grid_position: u8,
+    pub driver_status: u8, // TODO enum
+    pub result_status: u8, // TODO enum
 }
 
 #[derive(Debug, DekuRead)]
 pub struct PacketLapData {
     #[deku(count = "22")]
-    lap_data: Vec<LapData>,
+    pub lap_data: Vec<LapData>,
 }
 
 #[derive(Debug, DekuRead)]
