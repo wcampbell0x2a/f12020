@@ -21,29 +21,44 @@ pub struct Packet {
 pub enum PacketType {
     #[deku(id = "0")]
     Motion(PacketMotionData),
+
     #[deku(id = "1")]
     Session(PacketSessionData),
+
     #[deku(id = "2")]
     LapData(PacketLapData),
+
     #[deku(id = "3")]
     Event(PacketEvent),
+
     #[deku(id = "4")]
     Participant(PacketParticipantData),
+
     #[deku(id = "5")]
     CarSetup(PacketCarSetupData),
+
     #[deku(id = "6")]
     CarTelemetry(PacketCarTelemetryData),
+
     #[deku(id = "7")]
     CarStatus(PacketCarStatusData),
+
     #[deku(id = "8")]
     FinalClassification(PacketFinalClassificationData),
+
     #[deku(id = "9")]
-    LobbyInfo,
+    LobbyInfo(PacketLobbyInfoData),
+
+    #[deku(id = "10")]
+    CarDamage(CarDamageData),
+
+    #[deku(id = "11")]
+    SessionHistory(SessionHistory),
 }
 
 #[derive(Debug, DekuRead)]
 pub struct PacketMotionData {
-    car_motion_data: CarMotionData,
+    car_motion_data: [CarMotionData; 22],
     suspension_position: [f32; 4],
     suspension_velocity: [f32; 4],
     suspension_acceleration: [f32; 4],
@@ -127,39 +142,36 @@ pub struct PacketSessionData {
 
 #[derive(Debug, DekuRead)]
 pub struct LapData {
-    pub last_lap_time: f32,
-    pub current_lap_time: f32,
+    pub last_lap_time: u32,
+    pub current_lap_time: u32,
     pub sector1_time_inms: u16,
     pub sector2_time_inms: u16,
-    pub best_lap_time: f32,
-    pub best_lap_num: u8,
-    pub best_lap_sector1_time_in_ms: u16,
-    pub best_lap_sector2_time_in_ms: u16,
-    pub best_lap_sector3_time_in_ms: u16,
-    pub best_overall_sector1_time_in_ms: u16,
-    pub best_overall_sector1_lap_num: u8,
-    pub best_overall_sector2_time_in_ms: u16,
-    pub best_overall_sector2_lap_num: u8,
-    pub best_overall_sector3_time_in_ms: u16,
-    pub best_overall_sector3_lap_num: u8,
     pub lap_distance: f32,
     pub total_distance: f32,
     pub safety_car_delta: f32,
     pub car_position: u8,
     pub current_lap_num: u8,
-    pub pit_status: u8,          // TODO enum
-    pub sector: u8,              // TODO enum
-    pub current_lap_invalid: u8, // TODO enum
+    pub pit_status: u8,
+    pub num_pit_stops: u8,
+    pub sector: u8,
+    pub current_lap_invalid: u8,
     pub penalties: u8,
+    pub warnings: u8,
+    pub num_unserved_drive_through_pens: u8,
     pub grid_position: u8,
-    pub driver_status: u8, // TODO enum
-    pub result_status: u8, // TODO enum
+    pub driver_status: u8,
+    pub result_status: u8,
+    pub pitlane_timer_active: u8,
+    pub pitlane_time_in_lane: u16,
+    pub pitstop_timer: u16,
+    pub pitstop_should_serve_pen: u8,
 }
 
 #[derive(Debug, DekuRead)]
 pub struct PacketLapData {
-    #[deku(count = "22")]
-    pub lap_data: Vec<LapData>,
+    pub lap_data: [LapData; 22],
+    time_trail_pb_car_idx: u8,
+    time_trail_rival_car_idx: u8,
 }
 
 #[derive(Debug, DekuRead)]
@@ -170,9 +182,9 @@ pub enum PacketEvent {
     #[deku(id = "[b'S', b'E', b'N', b'D']")]
     SessionEnabled,
     #[deku(id = "[b'F', b'T', b'L', b'P']")]
-    FastestLap,
+    FastestLap(FastestLap),
     #[deku(id = "[b'R', b'T', b'M', b'T']")]
-    Retirement,
+    Retirement(Retirement),
     #[deku(id = "[b'D', b'R', b'S', b'E']")]
     DRSEnabled,
     #[deku(id = "[b'D', b'R', b'S', b'D']")]
@@ -182,11 +194,86 @@ pub enum PacketEvent {
     #[deku(id = "[b'C', b'H', b'Q', b'F']")]
     ChequeredFlag,
     #[deku(id = "[b'R', b'C', b'W', b'N']")]
-    RaceWinner,
+    RaceWinner(RaceWinner),
     #[deku(id = "[b'P', b'E', b'N', b'A']")]
-    PenaltyIssued,
+    PenaltyIssued(Penalty),
     #[deku(id = "[b'S', b'P', b'T', b'P']")]
-    SpeedTrapTriggered,
+    SpeedTrapTriggered(SpeedTrap),
+    #[deku(id = "[b'S', b'T', b'L', b'G']")]
+    StartLights(StartLights),
+    #[deku(id = "[b'L', b'G', b'O', b'T']")]
+    LightsOuts,
+    #[deku(id = "[b'D', b'T', b'S', b'V']")]
+    DriveThroughServed(DriveThroughServed),
+    #[deku(id = "[b'S', b'G', b'S', b'V']")]
+    StopGoServed(StopGoServed),
+    #[deku(id = "[b'F', b'L', b'B', b'K']")]
+    FlashBack(FlashBack),
+    #[deku(id = "[b'B', b'U', b'T', b'N']")]
+    ButtonStatus(ButtonStatus),
+}
+
+#[derive(Debug, DekuRead)]
+pub struct FastestLap {
+    vehicle_idx: u8,
+    lap_time: f32,
+}
+
+#[derive(Debug, DekuRead)]
+pub struct Retirement {
+    vehicle_idx: u8,
+}
+
+#[derive(Debug, DekuRead)]
+pub struct RaceWinner {
+    vehicle_idx: u8,
+}
+
+#[derive(Debug, DekuRead)]
+pub struct Penalty {
+    penalty_type: u8,
+    infringment_type: u8,
+    vehicle_inx: u8,
+    other_vehicle_idx: u8,
+    time: u8,
+    lap_num: u8,
+    places_gained: u8,
+}
+
+#[derive(Debug, DekuRead)]
+pub struct SpeedTrap {
+    vehicle_idx: u8,
+    speed: f32,
+    is_overall_fastest_in_session: u8,
+    is_driver_fatest_in_session: u8,
+    fatest_vehicle_idx_in_session: u8,
+    fastest_speed_in_session: f32,
+}
+
+#[derive(Debug, DekuRead)]
+pub struct StartLights {
+    num_of_lights: u8,
+}
+
+#[derive(Debug, DekuRead)]
+pub struct DriveThroughServed {
+    vehicle_idx: u8,
+}
+
+#[derive(Debug, DekuRead)]
+pub struct StopGoServed {
+    vehicle_idx: u8,
+}
+
+#[derive(Debug, DekuRead)]
+pub struct FlashBack {
+    frame_identifier: u32,
+    session_time: f32,
+}
+
+#[derive(Debug, DekuRead)]
+pub struct ButtonStatus {
+    button_status: u32,
 }
 
 #[derive(Debug, DekuRead)]
@@ -236,8 +323,7 @@ pub struct CarSetupData {
 
 #[derive(Debug, DekuRead)]
 pub struct PacketCarSetupData {
-    #[deku(count = "22")]
-    car_setups: Vec<CarSetupData>,
+    car_setups: [CarSetupData; 22],
 }
 
 #[derive(Debug, DekuRead)]
@@ -261,8 +347,7 @@ pub struct CarTelemetryData {
 
 #[derive(Debug, DekuRead)]
 pub struct PacketCarTelemetryData {
-    #[deku(count = "22")]
-    car_telemetry_data: Vec<CarTelemetryData>,
+    car_telemetry_data: [CarTelemetryData; 22],
     button_status: u32,
     mfd_panel_index: u8,
     mfd_panel_index_secondary_player: u8,
@@ -274,7 +359,7 @@ pub struct CarStatusData {
     traction_control: u8,
     anti_lock_brakes: u8,
     fuel_mix: u8,
-    front_break_bias: u8,
+    front_brake_bias: u8,
     pit_limiter_status: u8,
     fuel_in_tank: f32,
     fuel_capacity: f32,
@@ -284,18 +369,10 @@ pub struct CarStatusData {
     max_gears: u8,
     drs_allowed: u8,
     drs_activation_distance: u16,
-    tyres_wear: [u8; 4],
     actual_tyre_compound: u8, // TODO enum
     visual_tyre_compound: u8, // TODO enum
     tyres_age_laps: u8,
-    tyres_damage: [u8; 4],
-    front_left_wing_damage: u8,
-    front_right_wing_damage: u8,
-    rear_wing_damage: u8,
-    drs_fault: u8, // TODO enum
-    engine_damage: u8,
-    gear_box_damage: u8,
-    vehicle_fia_falgs: u8, // TODO enum
+    vehicle_fia_flags: i8,
     ers_store_energy: f32,
     ers_deploy_mode: u8,
     ers_harvested_this_lap_mguk: f32,
@@ -305,8 +382,7 @@ pub struct CarStatusData {
 
 #[derive(Debug, DekuRead)]
 pub struct PacketCarStatusData {
-    #[deku(count = "22")]
-    car_status_data: Vec<CarStatusData>,
+    car_status_data: [CarStatusData; 22],
 }
 
 #[derive(Debug, DekuRead)]
@@ -346,6 +422,65 @@ pub struct LobbyInfoData {
 #[derive(Debug, DekuRead)]
 pub struct PacketLobbyInfoData {
     num_players: u8,
-    #[deku(count = "22")]
-    lobby_players: Vec<LobbyInfoData>,
+    lobby_players: [LobbyInfoData; 22],
+}
+
+#[derive(Debug, DekuRead)]
+pub struct CarDamageData {
+    car_damage: [CarDamage; 22],
+}
+
+#[derive(Debug, DekuRead)]
+pub struct CarDamage {
+    tyres_wear: [f32; 4],
+    tyres_damage: [u8; 4],
+    brakes_damage: [u8; 4],
+    front_left_wing_damage: u8,
+    front_right_wing_damage: u8,
+    rear_wing_damage: u8,
+    floor_damage: u8,
+    dff_user_damage: u8,
+    sidepod_damage: u8,
+    drs_fault: u8,
+    ers_fault: u8,
+    gearbox_damage: u8,
+    engine_damage: u8,
+    engine_mguh_wear: u8,
+    engine_es_wear: u8,
+    engine_ce_wear: u8,
+    engine_ice_wear: u8,
+    engine_mguk_wear: u8,
+    // TODO: if these are added everything panics
+    //engine_tc_wear: u8,
+    //engine_blown: u8,
+    //engine_seized: u8,
+}
+
+#[derive(Debug, DekuRead)]
+pub struct SessionHistory {
+    car_idx: u8,
+    num_laps: u8,
+    num_tyre_stints: u8,
+    best_laptime_lapnum: u8,
+    best_sector1_lapnum: u8,
+    best_sector2_lapnum: u8,
+    best_sector3_lapnum: u8,
+    lap_history: [LapHistory; 100],
+    //tyre_stint_history: [TyreStintHistory; 8],
+}
+
+#[derive(Debug, DekuRead)]
+pub struct LapHistory {
+    lap_time_in_ms: u32,
+    sector_one_time_in_ms: u16,
+    sector_two_time_in_ms: u16,
+    sector_three_time_in_ms: u16,
+    lapt_valid_big_flags: u8,
+}
+
+#[derive(Debug, DekuRead)]
+pub struct TyreStintHistory {
+    endlap: u8,
+    tyre_actual_compound: u8,
+    typre_visual_compound: u8,
 }
