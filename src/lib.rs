@@ -138,6 +138,27 @@ pub struct PacketSessionData {
     num_weather_forecast_samples: u8,
     #[deku(count = "num_weather_forecast_samples")]
     weather_forcast_samples: Vec<WeatherForecastSample>,
+    forcast_accuracy: u8,
+    ai_difficulty: u8,
+    season_link_ident: u32,
+    weekend_link_ident: u32,
+    session_link_ident: u32,
+    pitstop_window_ideal_lap: u8,
+    pitstop_window_latest_lap: u8,
+    pitstop_rejoin_position: u8,
+    steering_assist: u8,
+    braking_assist: u8,
+    grearbox_assist: u8,
+    pit_assist: u8,
+    pit_release_assist: u8,
+    ers_assist: u8,
+    drs_assist: u8,
+    dynamic_racing_line: u8,
+    dynamic_racing_line_type: u8,
+    game_mode: u8,
+    rule_set: u8,
+    time_of_day: u32,
+    session_length: u8,
 }
 
 #[derive(Debug, DekuRead)]
@@ -158,6 +179,7 @@ pub struct LapData {
     pub penalties: u8,
     pub warnings: u8,
     pub num_unserved_drive_through_pens: u8,
+    pub num_unserved_stop_go_pens: u8,
     pub grid_position: u8,
     pub driver_status: u8,
     pub result_status: u8,
@@ -280,11 +302,12 @@ pub struct ButtonStatus {
 pub struct ParticipantData {
     ai_controlled: u8, // TODO bool
     driver_id: u8,     // TODO enum?
-    time_id: u8,       // TODO enum?
+    network_id: u8,    // TODO enum?
+    team_id: u8,       // TODO enum?
+    my_team: u8,
     race_number: u8,
     nationality: u8,
-    #[deku(count = "48")]
-    name: Vec<u8>,
+    name: [u8; 48],
     your_telemetry: u8, // TODO enum
 }
 
@@ -337,6 +360,7 @@ pub struct CarTelemetryData {
     engine_rpm: u16,
     drs: u8, // TODO enum
     rev_lights_percent: u8,
+    rev_lights_bitvalue: u16,
     brakes_temperature: [u16; 4],
     tyres_surface_temperature: [u8; 4],
     tyres_inner_temperature: [u8; 4],
@@ -348,7 +372,6 @@ pub struct CarTelemetryData {
 #[derive(Debug, DekuRead)]
 pub struct PacketCarTelemetryData {
     car_telemetry_data: [CarTelemetryData; 22],
-    button_status: u32,
     mfd_panel_index: u8,
     mfd_panel_index_secondary_player: u8,
     suggested_gear: u8, // TODO enum
@@ -378,6 +401,7 @@ pub struct CarStatusData {
     ers_harvested_this_lap_mguk: f32,
     ers_harvested_this_lap_mguh: f32,
     ers_deployted_this_lap: f32,
+    network_paused: u8,
 }
 
 #[derive(Debug, DekuRead)]
@@ -400,6 +424,7 @@ pub struct FinalClassificationData {
     num_tyre_stints: u8,
     tyre_stints_actual: [u8; 8],
     tyre_stints_visual: [u8; 8],
+    tyre_stints_end_laps: [u8; 8],
 }
 
 #[derive(Debug, DekuRead)]
@@ -414,8 +439,7 @@ pub struct LobbyInfoData {
     ai_controlled: u8,
     team_id: u8,
     nationality: u8,
-    #[deku(count = "48")]
-    name: Vec<u8>,
+    name: [u8; 48],
     ready_status: u8, // TODO enum
 }
 
@@ -439,7 +463,7 @@ pub struct CarDamage {
     front_right_wing_damage: u8,
     rear_wing_damage: u8,
     floor_damage: u8,
-    dff_user_damage: u8,
+    diffuser_damage: u8,
     sidepod_damage: u8,
     drs_fault: u8,
     ers_fault: u8,
@@ -450,10 +474,9 @@ pub struct CarDamage {
     engine_ce_wear: u8,
     engine_ice_wear: u8,
     engine_mguk_wear: u8,
-    // TODO: if these are added everything panics
-    //engine_tc_wear: u8,
-    //engine_blown: u8,
-    //engine_seized: u8,
+    engine_tc_wear: u8,
+    engine_blown: u8,
+    engine_seized: u8,
 }
 
 #[derive(Debug, DekuRead)]
@@ -466,7 +489,7 @@ pub struct SessionHistory {
     best_sector2_lapnum: u8,
     best_sector3_lapnum: u8,
     lap_history: [LapHistory; 100],
-    //tyre_stint_history: [TyreStintHistory; 8],
+    tyre_stint_history: [TyreStintHistory; 8],
 }
 
 #[derive(Debug, DekuRead)]
