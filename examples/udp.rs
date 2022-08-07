@@ -37,7 +37,7 @@ fn main() {
             }
             let current_lap = &lap_data.lap_data[packet.player_car_index as usize];
 
-            let lap_time = Duration::from_secs_f32(current_lap.current_lap_time);
+            let lap_time = Duration::from_secs_f32(current_lap.current_lap_time as f32);
 
             if last_current_lap_best_time != current_lap.current_lap_num {
                 recorded_lap_times.push(current_lap.last_lap_time);
@@ -62,9 +62,11 @@ fn main() {
 
                 let mut rows = vec![];
                 for (i, recorded_lap_time) in recorded_lap_times.iter().enumerate() {
-                    let min = (recorded_lap_time / 60.0 as f32).floor() as u32;
-                    let sec = recorded_lap_time % 60.0;
-                    let sec = if sec < 10.0 {
+                    let duration = Duration::from_millis(*recorded_lap_time as u64);
+
+                    let min = (duration.as_secs() / 60) as u32;
+                    let sec = duration.as_secs() % 60;
+                    let sec = if sec < 10 {
                         format!("0{}", sec)
                     } else {
                         format!("{}", sec)
